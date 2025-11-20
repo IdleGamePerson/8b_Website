@@ -1,0 +1,232 @@
+// js/main.js
+
+// ==========================
+//  Custom alphabet sorting
+// ==========================
+
+// Dein Alphabet:
+const ALPHABET = [
+  "a", "ɔ", "o", "u", "ɛ", "e", "ɪ",
+  "p", "t", "k", "ɡ", "d", "b",
+  "f", "v",
+  "n", "m",
+  "z", "s", "ʃ",
+  "l", "j", "h"
+];
+
+// Mapping für Zeichen → Reihenfolge
+const CHAR_ORDER = {};
+ALPHABET.forEach((c, i) => CHAR_ORDER[c] = i);
+
+// Vergleichsfunktion für zwei Wörter
+function compareWords(a, b) {
+  const w1 = a.id;
+  const w2 = b.id;
+  const len = Math.min(w1.length, w2.length);
+
+  for (let i = 0; i < len; i++) {
+    const c1 = w1[i];
+    const c2 = w2[i];
+
+    const o1 = CHAR_ORDER[c1] ?? 999;
+    const o2 = CHAR_ORDER[c2] ?? 999;
+
+    if (o1 !== o2) return o1 - o2;
+  }
+
+  return w1.length - w2.length;
+}
+
+// Wörter gleich beim Start alphabetisch sortieren
+WORDS.sort(compareWords);
+
+
+// ==========================
+//       Suchlogik
+// ==========================
+const searchInput = document.getElementById("search-input");
+const resultsList = document.getElementById("results-list");
+const resultCount = document.getElementById("result-count");
+const noResults = document.getElementById("no-results");
+
+let searchTimeout = null;
+
+// Normalisiert Strings → akzent-unabhängige Suche
+function normalize(str) {
+  return str
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+
+// Renderfunktion für die Ergebnisliste
+function renderResults(results) {
+  resultsList.innerHTML = "";
+
+  // Anzahl anzeigen
+  resultCount.textContent = `${results.length} Ergebnis${results.length === 1 ? "" : "se"}`;
+
+  if (!results.length) {
+    noResults.classList.remove("hidden");
+    return;
+  }
+
+  noResults.classList.add("hidden");
+
+  // Alphabetisch sortieren
+  results.sort(compareWords);
+
+  // Liste füllen
+  results.forEach((entry) => {
+    const li = document.createElement("li");
+
+    const link = document.createElement("a");
+    link.href = `word.html?id=${encodeURIComponent(entry.id)}`;
+    link.textContent = entry.word;
+    link.className = "result-link";
+
+    const meta = document.createElement("span");
+    meta.className = "result-meta";
+    const dePreview = entry.de ? entry.de.join(", ") : "";
+    const enPreview = entry.en ? entry.en.join(", ") : "";
+    meta.textContent = `${entry.pos || ""} · DE: ${dePreview} · EN: ${enPreview}`;
+
+    li.appendChild(link);
+    li.appendChild(meta);
+    resultsList.appendChild(li);
+  });
+}
+
+
+// Hauptsuchfunktion
+function performSearch(query) {
+  const q = normalize(query.trim());
+
+  // Wenn leer → alles anzeigen
+  if (!q) {
+    renderResults(WORDS);
+    return;
+  }
+
+  const matches = WORDS.filter((entry) => {
+    const inId = normalize(entry.id).includes(q);
+    const inWord = normalize(entry.word).includes(q);
+
+    const inDe = (entry.de || [])
+      .map((w) => normalize(w))
+      .some((w) => w.includes(q));
+
+    const inEn = (entry.en || [])
+      .map((w) => normalize(w))
+      .some((w) => w.includes(q));
+
+    // Suche über Formentabelle
+    let inForms = false;
+    if (entry.formsTable?.rows) {
+      for (const row of entry.formsTable.rows) {
+        for (const cell of row.cells || []) {
+          if (normalize(cell).includes(q)) {
+            inForms = true;
+            break;
+          }
+        }
+        if (inForms) break;
+      }
+    }
+
+    return inId || inWord || inDe || inEn || inForms;
+  });
+
+  renderResults(matches);
+}
+
+
+// Input → Suche (mit Debounce, damit es nicht flackert)
+searchInput.addEventListener("input", () => {
+  const value = searchInput.value;
+
+  if (searchTimeout) clearTimeout(searchTimeout);
+
+  searchTimeout = setTimeout(() => {
+    performSearch(value);
+  }, 120);
+});
+
+
+// Beim Laden der Seite → alle Wörter anzeigen
+renderResults(WORDS);
+
+// ==========================
+//   Grammatik-Navigation
+// ==========================
+
+document.getElementById("grammar-list").addEventListener("click", (e) => {
+  if (e.target.tagName !== "LI") return;
+
+  const id = e.target.dataset.id;
+  if (!id) return;
+
+  window.location.href = `grammar.html?id=${id}`;
+});
+
+// ===============================
+//   GRAMMATIK-MENÜ AUTOMATISCH
+// ===============================
+
+const grammarList = document.getElementById("grammar-list");
+
+// Liste automatisch generieren
+function buildGrammarMenu() {
+  grammarList.innerHTML = "";
+
+  GRAMMAR.forEach(entry => {
+    const li = document.createElement("li");
+    li.textContent = entry.title;
+    li.dataset.id = entry.id;    // <-- Wichtig!
+    grammarList.appendChild(li);
+  });
+}
+
+// Klick → grammatik-Seite öffnen
+grammarList.addEventListener("click", (e) => {
+  if (e.target.tagName !== "LI") return;
+
+  const id = e.target.dataset.id;
+  if (!id) return;
+
+  window.location.href = `grammar.html?id=${id}`;
+});
+
+buildGrammarMenu();
+
+// ===============================
+//   KURSE-LISTE (rechts)
+// ===============================
+
+const coursesList = document.getElementById("courses-list");
+
+function buildCoursesMenu() {
+  coursesList.innerHTML = "";
+
+  COURSES.forEach(entry => {
+    const li = document.createElement("li");
+    li.textContent = entry.title;
+    li.dataset.id = entry.id;
+    coursesList.appendChild(li);
+  });
+}
+
+coursesList.addEventListener("click", (e) => {
+  if (e.target.tagName !== "LI") return;
+
+  const id = e.target.dataset.id;
+  const course = COURSES.find(c => c.id === id);
+
+  if (!course) return;
+
+  window.location.href = `course.html?id=${id}`;
+});
+
+
+buildCoursesMenu();
