@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>8bisch – Hauptseite</title>
+  <link rel="stylesheet" href="CSS/8bisch_style.css">
+</head>
+<body>
+  <header class="site-header">
+    <h1>8bisch – Offizielle Sprachseite</h1>
+    <p>Infos, Wörterbuch, Grammatik und Kurse für 8bisch.</p>
+  </header>
+
+  <main class="container">
+
+    <!-- ===================
+         INFOTEXT
+    ==================== -->
+    <section class="info-section">
+      <h2>Über 8bisch</h2>
+      <p>
+        8bisch ist eine konstruierte Sprache, welche von n42 entwickelt wurde. Das Ziel ist eine Sprache, welche einfach lernbar ist, aber komplex genug ist, um nicht unpraktisch zu sein. Außerdem eine, die zu der 8b passt. Das momentane Wörterbuch enthält 21 Wörter, aber es wird täglich expandiert, und das eventuelle Ziel ist >2000 Wörter im Wörterbuch.
+      </p>
+    </section>
+
+
+    <!-- ===================
+         3-SPALTIGES LAYOUT
+    ==================== -->
+    <div class="three-column-layout">
+
+      <!-- -------------------
+           LINKE SPALTE:
+           GRAMMATIK
+      -------------------- -->
+      <aside class="left-panel">
+        <h3>Grammatik</h3>
+        <ul class="side-list" id="grammar-list"></ul>
+      </aside>
+
+
+      <!-- -------------------
+           MITTLERE SPALTE:
+           DICTIONARY (wie bisher)
+      -------------------- -->
+      <section class="middle-panel">
+
+        <section class="search-section">
+          <label for="search-input">Suche nach Wort, Deutsch oder Englisch:</label>
+          <input type="text" id="search-input"
+           placeholder="Suche nach Wort...">
+        </section>
+
+        <section class="results-section">
+          <h2>Wörterbuch</h2>
+          <p id="result-count" class="muted"></p>
+
+          <ul id="results-list"></ul>
+          <p id="no-results" class="hidden">Keine Ergebnisse gefunden.</p>
+        </section>
+
+      </section>
+
+
+      <!-- -------------------
+           RECHTE SPALTE:
+           KURSE / UNTERRICHTE
+      -------------------- -->
+      <aside class="right-panel">
+        <h3>Kurse</h3>
+        <ul class="side-list" id="courses-list"></ul>
+      </aside>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>8bisch – Sprachressourcen und Wörterbuch.</p>
+  </footer>
+
+  <script src="8bischJS/data.js"></script>
+  <script src="8bischJS/grammar.js"></script>
+  <script src="8bischJS/courses.js"></script>
+  <script src="8bischJS/main.js"></script>
+</body>
+</html>
